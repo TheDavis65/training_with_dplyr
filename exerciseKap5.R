@@ -5,7 +5,8 @@ pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes,
 
 
 ###################### dplyr #################################################
-
+x <- "fantastic"
+x
 
 library(nycflights13)
 library(tidyverse)
