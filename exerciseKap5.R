@@ -5,6 +5,10 @@ pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes,
 
 
 ###################### dplyr #################################################
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4ddcc2ff89672957fc3b4d6937c4d17f3762d717
 
 library(nycflights13)
 library(tidyverse)
