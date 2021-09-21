@@ -5,11 +5,6 @@ pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes,
 
 
 ###################### dplyr #################################################
-x <- "fantastic"
-x
-
-y <- "super fantastic"
-y
 
 library(nycflights13)
 library(tidyverse)
@@ -130,8 +125,18 @@ arrange(df, desc(x))
 
 #### 5.3.1
 
-realFlights <- arrange(flights, x = is.na())
+is.na(flights)
+sum(is.na(flights))
+
+naRemoved <- na.omit(flights)
+view(naRemoved)
+sum(naRemoved)
+
+## virker
+realFlights <- arrange(flights, na.rm = TRUE)
 view(realFlights)
+rf <- sum(realFlights)
+rf
 
 testFlight <-is.na(flights)
 view(testFlight)
@@ -326,7 +331,213 @@ by_day <- group_by(flights, year, month, day)
 summ <- summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 view(summ)
 
+### 5.6.1 pips #######
+by_best <- group_by(flights, dest)
+delay <- summarise(by_best,
+                   count = n(),
+                   dist = mean(distance, na.rm = TRUE),
+                   delay = mean(arr_delay, na.rm = TRUE)
+                   )
+delay <- filter(delay, count > 20, dest != "HNL")
 
+# It looks like delays increase with distance up to ~750 miles 
+# and then decrease. Maybe as flights get longer there's more 
+# ability to make up delays in the air?
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+#> `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+
+### samme eksempel som ovenfor bare med pipi %>% ####
+
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "NHL")
+
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+
+## med na
+flights %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay))
+
+flights %>% 
+  group_by(year,month,day) %>% 
+  summarise(mean = mean(dep_delay, na.rm = TRUE))
+
+### Not cancelled flights
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+view(not_cancelled)
+
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(mean = mean(dep_delay))
+view(not_cancelled)
+not_cancelled
+sum(is.na(not_cancelled))
+
+
+#### Counts ######
+
+delays <- not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(
+    delay = mean(arr_delay)
+  )
+ggplot(data = delays, mapping = aes(x = delay)) +
+  geom_freqpoly(binwidth  = 10)
+
+### scatterplot of number of flights vs. average delay ##
+delays <- not_cancelled %>% 
+  group_by(tailnum) %>% 
+  summarise(
+    delay = mean(arr_delay, na.rm = TRUE),
+    n = n()
+  )
+ggplot(data = delays, mapping = aes(x = n, y = delay)) +
+  geom_point(alpha = 1/10)
+
+#### Basrball eksempel #########
+batting <- as_tibble(Lahman::Batting)
+
+batters <- batting %>% 
+  group_by(playerID) %>% 
+  summarise(
+    ba = sum(H,na.rm = TRUE) / sum(AB, na.rm = TRUE),
+    ab = sum(AB, na.rm = TRUE)
+  )
+view(batters)
+
+batters %>% 
+  filter(ab > 100) %>% 
+  ggplot(mapping = aes(x = ab, y = ba)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+
+batters %>% 
+  arrange(desc(ba))
+
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    avg_delay1 = mean(arr_delay),
+    avg_delay2 = mean(arr_delay[arr_delay > 0]) # the average positive delay
+  )
+#> `summarise()` regrouping output by 'year', 'month' (override with `.groups` argument)
+
+# Why is distance to some destinations more variable than to others?
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarise(distance_sd = sd(distance)) %>% 
+  arrange(desc(distance_sd))
+#> `summarise()` ungrouping output (override with `.groups` argument)
+
+# When do the first and last flights leave each day?
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    first = min(dep_time),
+    last = max(dep_time)
+  )
+view(not_cancelled)
+
+### first and last depature each day
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(
+    first_dep = first(dep_time),
+    last_dep = last(dep_time)
+  )
+
+#### range ###
+not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  mutate(r = min_rank(desc(dep_time))) %>% 
+  filter(r %in% range(r))
+
+
+### To count the number of non-missing values, use sum(!is.na(x)). To count the number of distinct (unique) values, use n_distinct(x).
+not_cancelled %>% 
+  group_by(dest) %>% 
+  summarise(carriers = n_distinct(carrier)) %>% 
+  arrange(desc(carriers))
+
+### Only count
+not_cancelled %>% 
+  count(dest)
+
+
+#### “count” (sum) the total number of miles a plane flew:
+yr <-  not_cancelled %>% 
+  count(tailnum, wt = distance)
+view(yr)
+# How many flights left before 5am? (these usually indicate delayed
+# flights from the previous day)
+yt <- not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(n_early = sum(dep_time < 500))
+view(yt)
+
+# What proportion of flights are delayed by more than an hour?
+yu <- not_cancelled %>% 
+  group_by(year, month, day) %>% 
+  summarise(hour_prop = mean(arr_delay > 60))
+
+view(yu)
+
+
+### Grouping by multiple variables ###
+### flyvninger dagligt
+daily <- group_by(flights, year, month, day)
+(per_day <- summarise(daily, flights = n()))
+view(per_day)
+### flyvninger månedligt
+(per_month = summarise(per_day, flights = sum(flights)))
+
+### flyvninger årligt
+(per_year <- summarise(per_month, flights = sum(flights)))
+
+### 5.6.6 Ungrouping
+
+daily %>% 
+  ungroup() %>% 
+  summarise(flights = n())
+
+##### 5.6.7 Exercises
+
+### A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.
+earlyAndLate <- filter(flights, arr_delay == -15 | arr_delay == 15)
+
+view(earlyAndLate)
+(count(earlyAndLate))
+### flight is always 10 minutes late.
+ten_min_late <- filter(flights, arr_delay == 10)
+view(ten_min_late)
+(count(ten_min_late))
+
+### A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.
+half_hour_late_or_early <- filter(flights, arr_delay == -30 | arr_delay == 30)
+view(half_hour_late_or_early)
+(count(half_hour_late_or_early))
+
+d <- filter(flights, arr_delay > 120)
+(count(d))
+view(d)
+
+(count(is.na(not_cancelled)))
+
+not_cancelled %>% select(dest) %>% 
+  summarise(numOf = max(dest))
 
 
 flights
