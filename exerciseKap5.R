@@ -542,7 +542,7 @@ view(d)
 
 not_cancelled %>% select(dest) %>% 
   summarise(numOf = max(dest))
-
+#### lidt problemer
 
 flights
 head(flights)
