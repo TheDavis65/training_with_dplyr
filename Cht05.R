@@ -7,7 +7,7 @@ pacman::p_load("tidyverse", "magrittr", "nycflights13", "gapminder",
                "Lahman", "maps", "lubridate", "pryr", "hms", "hexbin",
                "feather", "htmlwidgets", "broom", "pander", "modelr", 
                "XML", "httr", "jsonlite", "lubridate", "microbenchmark",
-               "splines", "ISLR2", "MASS")
+               "splines", "ISLR2", "MASS","dplyr")
 
 # tidyverse indeholder pakkerne dplyr, ggplot2, forcats, tibble, readr, 
 # tidyr, purrr
@@ -58,6 +58,8 @@ y
 ?flights
 nycflights13::flights
 tail(flights)
+head(flights)
+view(flights)
 #More on tibbles later on. Similar to dataframes
 
 #  --------------------------------------
@@ -104,6 +106,7 @@ near(1/49*49, 1)
 flights
 jan1 <- filter(flights, month == 1, day == 1)
 jan1
+view(jan1)
 jan1_2 <- filter(flights, month == 1, between(day, 2, 3))
 jan1_2
 head(jan1_2)
@@ -142,7 +145,7 @@ NA == NA
 df <- tibble(x = c(1, NA, 3))
 filter(df, x > 1)
 filter(df, is.na(x) | x > 1)
-
+df
 #  --------------------------------------
 ##ARRANGE
 
@@ -164,34 +167,37 @@ arrange(df, desc(is.na(x)))
 #select() allows you to rapidly zoom in on a useful subset using 
 #operations based on the names of the variables.
 flights
-select(flights, year, month, day)
-select(flights, year:day)
-select(flights, year, arr_time, everything())
-select(flights, tailnum:time_hour)
-select(flights, -(year:day))
+dplyr::select(flights, year, month, day)
+dplyr::select(flights, year:day)
+dplyr::select(flights, year, arr_time, everything())
+dplyr::select(flights, tailnum:time_hour)
+dplyr::select(flights, -(year:day))
 
 #Functions that can be used within select():
 #starts_with("abc")
-select(flights, starts_with("d"))
+dplyr::select(flights, starts_with("d"))
 #ends_with("xyz")
-select(flights, ends_with("e"))
+dplyr::select(flights, ends_with("e"))
 #contains("ijk")
-select(flights, contains("arr"))
+dplyr::select(flights, contains("arr"))
 #matches("(.)\\1"): select variables that match a regular expression. This one
 #matches may variable that contain repeated characters. 
-select(flights, matches("(.)\\1"))
+dplyr::select(flights, matches("(.)\\1"))
 
 #num_range("x", 1:3)  would select x1, x2 and x3: 
 ##
 
 #rename rename variables and keeps the variables not mentioned
 flights
-rename(flights, tail_num = tailnum)
 
-#
-select(flights, day, month, day) #keeps the first variable called day
+rename(flights, tail_num = tailnum)
+today()
+
+
+
+dplyr::select(flights, day, month, day) #keeps the first variable called day
 vars <- c("year", "month", "day", "dep_delay", "arr_delay")
-select(flights, one_of(vars))
+dplyr::select(flights, one_of(vars))
 ?one_of
 
 #  --------------------------------------
