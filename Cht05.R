@@ -155,6 +155,8 @@ flights_01
 flights_02 <- arrange(flights, desc(year), desc(month), desc(day))
 flights_02
 
+flights_03 <- arrange(flights, desc(year, month, day))
+flights_03
 #Missing values are always sorted at the end of the file:
 
 df <- tibble(x=c(5, 2, NA))
@@ -172,6 +174,7 @@ dplyr::select(flights, year:day)
 dplyr::select(flights, year, arr_time, everything())
 dplyr::select(flights, tailnum:time_hour)
 dplyr::select(flights, -(year:day))
+dplyr::select(flights, c(17:1))
 
 #Functions that can be used within select():
 #starts_with("abc")
@@ -213,14 +216,14 @@ mutate(flights_sml,
        hours = air_time / 60,
        gain_per_hour = gain / hours
 )
-
+view(mutate)
 #If you only want to keep the new variables, use transmute():
 transmute(flights,
           gain = arr_delay - dep_delay,
           hours = air_time / 60,
           gain_per_hour = gain / hours
 )
-
+view(transmute)
 #Arithmetic operators are also useful in conjunction with the aggregate 
 #functions. E.g. x / sum(x) , and y - mean(y).
 #Modular arithmetic: %/% (integer division) and %% (remainder), 
@@ -233,13 +236,18 @@ transmute(flights,
 )
 
 #Other functions: log(), log2(), log10()
-?log() #etc
+?log #etc
 x <- 1:10
 x
+log(x)
 x01 <- lag(x)
 x02 <- lead(x)
 x03 <- lag(x, 2)
 x04 <- lead(x, 5)
+x01
+x02
+x03
+x04
 #  --------------------------------------
 #Cumulative and rolling aggregates:
 #cumsum(), cumprod(), cummin(), cummax(), cummean() etc. Check RcppRoll package for 
@@ -293,6 +301,7 @@ ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
 #We had to give each intermediate data frame a name. 
 #Instead we are going to use pipe, %>%, which is pronounced "then"
 
+
 delays <- flights %>% 
   group_by(dest) %>% 
   summarise(
@@ -332,6 +341,12 @@ not_cancelled %>%
 
 #Whenever you do any aggregation, it is always a good idea to include either a 
 #count (n()), or a count of non-missing values (sum(!is.na(x))). 
+
+
+# brug af table
+t <- table(flights$dest)
+t
+
 
 delays <- not_cancelled %>% 
   group_by(tailnum) %>% 
