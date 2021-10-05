@@ -10,6 +10,8 @@ pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes,
 
 #>>>>>>> 4ddcc2ff89672957fc3b4d6937c4d17f3762d717
 
+data()
+
 library(nycflights13)
 library(tidyverse)
 
@@ -85,7 +87,7 @@ view(arrLateMoreThan2HoursButOnTimeAtDeparture)
 ### svar 29
 
 ### var mindst 1 time forsinket men var i luften i mere end 30 minutter
-delay1H30minInAir <- filter(flights, arr_delay >= 60, minute >= 30)
+delay1H30minInAir <- filter(flights, dep_delay >= 60, (dep_delay - arr_delay) > 30)
 view(delay1H30minInAir)
 ### 2159 var forsinket mere end en time og havde mere end 30 minutters flyvetid
 
@@ -97,12 +99,26 @@ view(betweenMidnigtAnd6)
 ### between()
 betweenMidnigtAnd6Between <- filter(flights, between(hour, 0, 6))      
 view(betweenMidnigtAnd6Between) 
+betweenMidnigtAnd6Between
+
 
 ### dep_time mangler
+
+
+filter(flights, is.na(dep_time))
+summary(flights)
+
 missingDepTime <- filter(flights, dep_time == 0)
 view(missingDepTime)
-### hmmm 0
+### hmmm 0 
 
+NA ^ 0
+NA | TRUE
+NA & FALSE
+NA & TRUE
+NA * 0
+Inf * 0
+-Inf * 0
 ## 5.3 arrange()
 arr1 <- arrange(flights, year, month, day)
 view(arr1)
@@ -129,6 +145,14 @@ arrange(df, desc(x))
 
 #### 5.3.1
 
+arrange(flights, dep_time) %>% 
+  tail()
+arrange(flights, desc(is.na(dep_time)), dep_time)
+
+
+arrange(flights, desc(dep_delay))
+arrange(flights, dep_time)
+
 is.na(flights)
 sum(is.na(flights))
 
@@ -153,28 +177,29 @@ arr4 <- arrange(flights, dep_delay)
 view(arr4)
 
 ### hurtigeste fly
-arr5 <- arrange(flights, air_time)
+arr5 <- arrange(flights, desc(distance / air_time))
 view(arr5)
-
+arr5
 ### efter længeste distance
 byFarthestTrip <- arrange(flights, desc(distance))
 view(byFarthestTrip)
-
+byFarthestTrip
 ### efter korteste distance
 byShortestDistance <- arrange(flights, distance)
 view(byShortestDistance)
 
-#### select()
+#### dplyr::select()
 ### vælg kolonner ved navn
-sel1 <- select(flights, year ,month ,day)
+sel1 <- dplyr::select(flights, year ,month ,day)
 view(sel1)
 
 ### vælg kolonner i mellem år og dag
 sel2 <- select(flights, year:day)
 view(sel2)
-
+sel1 <- dplyr::select(flights, year ,month ,day)
+view(sel1)
 ### fravælg år til dag
-sel3 <- select(flights, -(year:day))
+sel3 <- dplyr::select(flights, -(year:day))
 view(sel3)
 
 ### rename()  VIRKER IKKE
@@ -182,27 +207,45 @@ rename(flights, tail_num = tailnum)
 view(rename1)
 
 ### EVERYTHING()
-evry1 <- select(flights, time_hour, air_time, everything())
+evry1 <- dplyr::select(flights, time_hour, air_time, everything())
 view(evry1)
-
+evry1
 #### 5.4.1
 ## dep_time, dep_delay, arr_time, and arr_delay from flights.
-sel4 <- select(flights, dep_time, dep_delay, arr_time, arr_delay)
+sel4 <- dplyr::select(flights, dep_time, dep_delay, arr_time, arr_delay)
 view(sel4)
 
 
 
 vars <- c("year", "month", "day", "dep_delay", "arr_delay")
-sel5 <- select(flights, vars)
+sel5 <- dplyr::select(flights, vars)
 sel5
 
 
-select(flights, contains("TIME"))
-select(flights, contains("time"))
+dplyr::select(flights, contains("TIME"))
+dplyr::select(flights, contains("time"))
+
+dplyr::select(flights, contains("time", ignore.case = FALSE))
+
+
+
+dplyr::select(flights, any_of(vars))
+dplyr::select(flights, all_of(vars))
+dplyr::select(flights, all_of(vars))
+
+#5.5.1
+
+24*60
+dep <- c(517, 1537, 2403)
+
+(dep %/% 100 * 60 + dep %% 100) %% 1440 ## minutter siden midnat
+
+timer <- dep %/% 100
+minutter <- dep %% 100
 
 ###### Mutate ################ 
 #### et subset af flights
-flight_small <- select(flights,
+flight_small <- dplyr::select(flights,
                        year:day,
                        ends_with("delay"),
                        distance,
@@ -391,7 +434,7 @@ not_cancelled
 sum(is.na(not_cancelled))
 
 
-#### Counts ######
+#### Counts ######F
 
 delays <- not_cancelled %>% 
   group_by(tailnum) %>% 
@@ -540,7 +583,7 @@ view(d)
 
 (count(is.na(not_cancelled)))
 
-not_cancelled %>% select(dest) %>% 
+not_cancelled %>% dplyr::dplyr::select(dest) %>% 
   summarise(numOf = max(dest))
 #### lidt problemer
 
