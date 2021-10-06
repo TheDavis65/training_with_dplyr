@@ -148,11 +148,12 @@ ggplot(diamonds, aes(x = cut, y = carat)) +
 
 # 7.5.1.1.5.4
 
-diamondsddd <- as.data.frame(diamonds)
+as.data.frame(diamondsddd <- diamonds) %>% 
+  dplyr::select("cut", "price")
 
-ggplot(diamondsddd, aes(x = diamondsddd$cut, y = diamondsddd$price)) +
+ggplot(data = diamonds,mapping = aes(x = cut, y = price)) +
   geom_lv()
-  
+problems(diamondsddd)  
 
 # CLEAN UP #################################################
 
