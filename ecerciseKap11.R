@@ -78,11 +78,13 @@ x
 problems(x)
 
 
+
+
 # 11 3.1 numbers
 
 parse_double("1.23")
 
-readr::parse_double("1.23", locale = locale(decimal_mark =","))
+readr::parse_double("1,23", locale = locale(decimal_mark =","))
 
 parse_number("$100")
 
@@ -173,6 +175,7 @@ parse_date("01/02/15", "%y/%m/%d")
 #> [1] "2001-02-15"
 
 parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+parse_date("1 januar 2015", "%d %B %Y", locale = locale("da"))
 #> [1] "2015-01-01"
 
 ### Excr 11.3.5
@@ -295,7 +298,9 @@ read_rds("challenge.rds")
 write_feather(challenge, "challenge.feather")
 read_feather("challenge.feather")
 
-
+jan2012 <- readRDS(file="data/jan2012.Rda")
+Canteen_data <- readRDS(file="data/data20171001.Rda")
+view(jan2012)
 
 # CLEAN UP #################################################
 
