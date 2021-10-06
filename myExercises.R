@@ -2,7 +2,10 @@
 pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes,
                ggvis,httr, lubridate, plotly, rio, rmarkdown, shiny,
                stringr, tidyr, caret, lars, tidyverse, psych, dygraphs,
-               vioplot, gapminder, nycflights13, gapminder, Lahman, ISLR2 )
+               vioplot, gapminder, nycflights13, gapminder, Lahman, ISLR2,
+               hms, feather, haven, readxl, DBI, jsonlite, xml2, lvplot 
+)
+
 
 
 
@@ -105,11 +108,51 @@ nycflights13::flights %>%
 #Da både pris og karat er kontinuerlige variabler, bruger jeg et spredningsdiagram til at visualisere deres forhold.
 
 diamonds2 <- diamonds %>% 
-  mutate(y = ifelse(y < 3 | y > 20, NA, y)) 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_point()
 
-ggplot(diamonds2, aes(x = carat, y = price) +
-         geom_point()
+### men man kan også bruge et boxplot
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+ggplot(data = diamonds2, mapping = aes(x = carat, y = price)) +
+  geom_boxplot(mapping = aes(group = cut_width(carat, 0.1)), orientation = "x")
 
+
+#Variablerne farve og klarhed er ordnet kategoriske variabler. Kapitlet foreslår at
+#visualisere en kategorisk og kontinuerlig variabel ved hjælp af frekvenspolygoner eller 
+#boxplots. I dette tilfælde vil jeg bruge et boksplot, da det bedre vil vise et forhold 
+#mellem variablerne.
+
+#Der er et svagt negativt forhold mellem farve og pris. Diamantfarvens skala går fra D 
+#(bedst) til J (værst). I øjeblikket er niveauerne af diamanter $ farve i den forkerte 
+#rækkefølge. Inden jeg plotter, vil jeg vende rækkefølgen på farveniveauerne, så de vil 
+#være i stigende kvalitetsrækkefølge på x-aksen. Farvesøjlen er et eksempel på en 
+#faktorvariabel, som er dækket i kapitlet "Faktorer"
+
+diamonds %>%
+  mutate(color = fct_rev(color)) %>%
+  ggplot(aes(x = color, y = price)) +
+  geom_boxplot()
+
+ggplot(data = diamonds) +
+  geom_boxplot(mapping = aes(x = clarity, y = price))
+
+ggplot(diamonds, aes(x = cut, y = carat)) +
+  geom_boxplot()
+# 7.5.1.1.5.3
+
+ggplot(diamonds, aes(x = cut, y = carat)) +
+  geom_boxplot() +
+  coord_flip()
+
+# 7.5.1.1.5.4
+
+diamondsddd <- as.data.frame(diamonds)
+
+ggplot(diamondsddd, aes(x = diamondsddd$cut, y = diamondsddd$price)) +
+  geom_lv()
+  
 
 # CLEAN UP #################################################
 
