@@ -488,7 +488,8 @@ str(parse_guess("2010-12-24"))
 #Missing and problems:
 challenge <- read_csv(readr_example("challenge.csv"))
 problems(challenge)
-
+tail(challenge)
+head(challenge)
 
 challenge <- read_csv(
   readr_example("challenge.csv"), 
@@ -511,6 +512,7 @@ challenge <- read_csv(
 )
 
 challenge
+
 View(challenge)
 tail(challenge)
 
