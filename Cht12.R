@@ -41,7 +41,9 @@ ggplot(table1, aes(year, cases)) +
 
 table4a %>% 
   pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+# reducere 1999 og 2000 til year værdierne flyttes til cases
 
+# den gamle metode neden for
 # gather er en gammel version af pivot_longer 
 table4a %>% 
   gather(`1999`, `2000`, key = "year", value = "cases")
@@ -158,11 +160,10 @@ treatment <- tribble(
   NA,                 3,           9,
   "Katherine Burke",  1,           4
 )
+treatment
 
 treatment %>% 
   fill(person) #last observation carried forward
-
-
 
 
 
@@ -183,14 +184,22 @@ who1
 
 xxx <- who1 %>% 
   count(key) 
-
-
+xxx
+view(xxx)
 #stringr=package, str_replace is the function, key is the 
 # variable and replace newrel with new_rel
 
 who2 <- who1 %>% 
   mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
 who2
+
+who2-sletmig <- who5 %>% 
+  mutate(key = stringr::str_replace(age, c("014"), "0-14"))
+who2-sletmig
+
+
+
+view(who2)
 
 who3 <- who2 %>% 
   separate(key, c("new", "type", "sexage"), sep = "_")
@@ -199,8 +208,28 @@ who3
 who3 %>% 
   count(new)
 
+table(who2$iso2)
+
+table(who2$iso3)
+
+
+age_pattrn <- c("014" = "0-14", "1524" = "15-24", "2534" = "24-34",
+                "3544" = "35-44","4554" = "45-54", "5564" = "55-64", "65" = "65+")
+
+who_sletmig <- who5 %>% 
+  mutate(age = str_replace_all(age, pattern = age_pattrn))
+
+who_sletmig
+
+who_sletmig <- who5 %>% 
+  mutate(age = str_replace_all(age, pattern = c('014' = "0-14", '1524' = "15-24")))
+
+view(who_sletmig)
+
+
 who4 <- who3 %>% 
   dplyr::select(-new, -iso2, -iso3)
+who4
 
 who5 <- who4 %>% 
   separate(sexage, c("sex", "age"), sep = 1)
@@ -217,7 +246,15 @@ who_finale <- who %>%
   mutate(key = stringr::str_replace(key, "newrel", "new_rel")) %>%
   separate(key, c("new", "type", "sexage"), sep = "_") %>% 
   dplyr::select(-new, -iso2, -iso3) %>% 
-  separate(sexage, c("sex", "age"), sep = 1)
+  separate(sexage, c("sex", "age"), sep = 1) %>% 
+  mutate(age = str_replace_all(age, pattern = age_pattrn))
+
+who_finale
+view(who_finale)
+
+who888 <- who5 %>% 
+  mutate(age = stringr::str_replace(age, "014", "0-14"))
+who888
 
 #  --------------------------------------
 

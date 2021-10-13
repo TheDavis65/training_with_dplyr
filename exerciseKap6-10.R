@@ -307,6 +307,52 @@ df$x
 df[, "xyz"]
 df[, c("abc", "xyz")]
 
-## 10.5 Exercises
+## 10.5. 1 Exercises
 
+as_tibble(mtcars)
+is_tibble(mtcars)
+
+
+xxx <- as_tibble(mtcars)
+is_tibble(xxx)
 ####
+is_tibble(ggplot2::diamonds)
+is_tibble(nucflights13::flights)
+
+class(mtcars)
+class(ggplot2::diamonds)
+
+# 10.5.2
+
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+
+
+tbl <- as_tibble(df)
+tbl$x
+tbl[, "xyz"]
+tbl[, c("abc", "xyz")]
+
+#### 10.5.3
+
+df <- as_tibble(mtcars)
+
+var <- "mpg"
+df[var]
+
+df$mpg
+
+
+df2 <- mtcars
+
+
+### 11.2.2.1
+
+
+
+### 11.2.2.4
+x <- "x,y\n1,'a,b'"
+read_delim(x, ",", quote = "'")
+read_csv(x)
