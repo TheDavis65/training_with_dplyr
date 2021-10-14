@@ -10,7 +10,7 @@ pacman::p_load("tidyverse", "magrittr", "nycflights13", "gapminder",
 ##CHT 13
 
 # nycflights13
-flights
+?flights
 airlines
 airports
 planes
@@ -102,6 +102,7 @@ y <- tribble(
 
 x
 y
+
 #  --------------------------------------
 #Inner join
 x %>% 
@@ -232,9 +233,10 @@ flights %>%
 
 
 # Excluding observations
-flights %>%
+xxx <-flights %>%
   anti_join(planes, by = "tailnum") %>%
   count(tailnum, sort = TRUE)
+xxx
 
 #Set operations:
 #intersect(x, y): return only observations in both x and y.
@@ -252,10 +254,10 @@ df2 <- tribble(
   1,  2
 )
 
-intersect(df1, df2)
-union(df1, df2)
-union_all(df1, df2)
+intersect(df1, df2)#finder fælles værdier
+union(df1, df2)# hvad de har sammen
+union_all(df1, df2)# alle værdier
 
-setdiff(df1, df2)
-setdiff(df2, df1)
+setdiff(df1, df2)#forskællen  med df1 som udgangspunkt
+setdiff(df2, df1)#forskællen  med df2 som udgangspunkt
 
