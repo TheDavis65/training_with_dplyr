@@ -258,6 +258,254 @@ who888
 
 #  --------------------------------------
 
+
+#12.2.1.2
+t2_cases <- filter(table2, type == "cases") %>%
+  rename(cases = count) %>%
+  arrange(country, year)
+t2_population <- filter(table2, type == "population") %>%
+  rename(population = count) %>%
+  arrange(country, year)
+
+t2_cases_per_cap <- tibble(
+  year = t2_cases$year,
+  country = t2_cases$country,
+  cases = t2_cases$cases,
+  population = t2_population$population
+) %>%
+  mutate(cases_per_cap = (cases / population) * 10000) %>%
+  dplyr::select(country, year, cases_per_cap)
+
+bind_rows(table2, t2_cases_per_cap) %>%
+  arrange(country, year, type, count)
+
+
+table4c <-
+  tibble(
+    country = table4a$country,
+    `1999` = table4a[["1999"]] / table4b[["1999"]] * 10000,
+    `2000` = table4a[["2000"]] / table4b[["2000"]] * 10000
+  )
+table4c
+table1 %>% 
+  mutate(rate = (cases / population) * 10000)
+# 12.2.3.1
+
+table2 %>%
+  filter(type == "cases") %>%
+  ggplot(aes(year, count)) +
+  geom_line(aes(group = country), colour = "grey50") +
+  geom_point(aes(colour = country)) +
+  scale_x_continuous(breaks = unique(table2$year)) +
+  ylab("cases")
+
+
+
+# 12.3.1
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>% 
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
+glimpse(stocks)
+
+
+# 12.3.3.2
+
+table4a %>% 
+  pivot_longer(c(1999, 2000), names_to = "year", values_to = "cases")
+
+table4a %>% 
+  pivot_longer(c(`1999`, `2000`), names_to = "year", values_to = "cases")
+table4a %>% 
+  pivot_longer(c("1999", "2000"), names_to = "year", values_to = "cases")
+
+
+# 12.3.3.3
+people <- tribble(
+  ~name, ~key, ~value,
+  #-----------------|--------|------
+  "Phillip Woods",  "age", 45,
+  "Phillip Woods", "height", 186,
+  "Phillip Woods", "age", 50,
+  "Jessica Cordero", "age", 37,
+  "Jessica Cordero", "height", 156
+)
+glimpse(people)
+
+pivot_wider(people, names_from="name", values_from = "value")
+#> Rows: 5
+#> Columns: 3
+#> $ name  <chr> "Phillip Woods", "Phillip Woods", "Phillip Woods", "Jessica Cor…
+#> $ key   <chr> "age", "height", "age", "age", "height"
+#> $ value <dbl> 45, 186, 50, 37, 156
+people2 <- people %>%
+  group_by(name, key) %>%
+  mutate(obs = row_number())
+people2
+
+pivot_wider(people2, names_from="name", values_from = "value")
+
+people %>%
+  distinct(name, key, .keep_all = TRUE) %>%
+  pivot_wider(names_from="name", values_from = "value")
+
+
+# 12.3.3.4
+
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes", NA, 10,
+  "no", 20, 12
+)
+
+preg_tidy <- preg %>%
+  pivot_longer(c(male, female), names_to = "sex", values_to = "count")
+preg_tidy
+
+preg_tidy2 <- preg %>%
+  pivot_longer(c(male, female), names_to = "sex", values_to = "count", values_drop_na = TRUE)
+preg_tidy2
+
+
+# 12.4.3.1
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"))
+#> Warning: Expected 3 pieces. Additional pieces discarded in 1 rows [2].
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     f    
+#> 3 h     i     j
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
+  separate(x, c("one", "two", "three"))
+#> Warning: Expected 3 pieces. Missing pieces filled with `NA` in 1 rows [2].
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     <NA> 
+#> 3 f     g     i
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"))
+#> Warning: Expected 3 pieces. Additional pieces discarded in 1 rows [2].
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     f    
+#> 3 h     i     j
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"), extra = "drop")
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     f    
+#> 3 h     i     j
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>%
+  separate(x, c("one", "two", "three"), extra = "merge")
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     f,g  
+#> 3 h     i     j
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
+  separate(x, c("one", "two", "three"))
+#> Warning: Expected 3 pieces. Missing pieces filled with `NA` in 1 rows [2].
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     <NA> 
+#> 3 f     g     i
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
+  separate(x, c("one", "two", "three"), fill = "right")
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 d     e     <NA> 
+#> 3 f     g     i
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
+  separate(x, c("one", "two", "three"), fill = "left")
+#> # A tibble: 3 x 3
+#>   one   two   three
+#>   <chr> <chr> <chr>
+#> 1 a     b     c    
+#> 2 <NA>  d     e    
+#> 3 f     g     i
+
+
+# 12.5.1.1
+
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return,
+              values_fill = 0)
+#> # A tibble: 4 x 3
+#>     qtr `2015` `2016`
+#>   <dbl>  <dbl>  <dbl>
+#> 1     1   1.88   0   
+#> 2     2   0.59   0.92
+#> 3     3   0.35   0.17
+#> 4     4  NA      2.66
+
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return,
+              values_fill = 0)
+#> # A tibble: 4 x 3
+#>     qtr `2015` `2016`
+#>   <dbl>  <dbl>  <dbl>
+#> 1     1   1.88   0   
+#> 2     2   0.59   0.92
+#> 3     3   0.35   0.17
+#> 4     4  NA      2.66
+stocks %>% 
+  complete(year, qtr, fill=list(return=0))
+#> # A tibble: 8 x 3
+#>    year   qtr return
+#>   <dbl> <dbl>  <dbl>
+#> 1  2015     1   1.88
+#> 2  2015     2   0.59
+#> 3  2015     3   0.35
+#> 4  2015     4   0   
+#> 5  2016     1   0   
+#> 6  2016     2   0.92
+#> # … with 2 more rows
+
+# 12.5.1.2
+
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+stocks %>% 
+  fill()
+
+
+
+
+
 #Exercises to do
 # 12.2.1.2
 # 12.3.3.1
