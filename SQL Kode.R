@@ -15,7 +15,7 @@ ex_001 <- data.frame(
                       )
 ex_001
 
-
+devtools::install_github("r-dbi/odbc")
 dbWriteTable(connection_ourdata, "db_ex_001", ex_001, overwrite = TRUE)
 
 dbListTables(connection_ourdata)
