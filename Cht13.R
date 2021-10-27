@@ -218,6 +218,7 @@ flights %>%
 
 #A better way is to use semi-joins. 
 
+
 flights %>% 
   semi_join(top_dest)
 

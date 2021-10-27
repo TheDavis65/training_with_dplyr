@@ -1,0 +1,406 @@
+---
+title: "Exercises 01"
+author: "Bjarne Taulo Sørensen"
+date: "Week 43 - 2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+<br />\    
+  
+
+<!-- Your own secret notes can be written here between the HTML signs -->   
+
+
+
+```{r bibliotek, eval=TRUE, include=TRUE}
+
+
+if (!dir.exists("data")) dir.create("data")
+
+# Gem dine datasæt i dette bibliotek
+
+```
+
+
+```{r pacman, eval=TRUE, include=FALSE}
+
+pacman::p_load("tidyverse", "magrittr", "nycflights13", "gapminder",
+               "Lahman", "maps", "lubridate", "pryr", "hms", "hexbin",
+               "feather", "htmlwidgets", "broom", "pander", "modelr",
+               "XML", "httr", "jsonlite", "lubridate", "microbenchmark",
+               "splines", "ISLR", "MASS", "testthat", "leaps", "caret",
+               "RSQLite", "class", "babynames", "nasaweather",
+               "fueleconomy", "viridis", "boot", "devtools")
+
+```
+
+<br />\   
+
+<!-- Your own secret notes can be written here between the HTML signs -->
+
+# Problem 1
+
+Make a new data set (call it Extra001) based on “data20171001”. Delete observations where “Department” has a missing value or the value “-“. Delete columns that are constants. 
+
+Remember to make comments.
+
+```{r problem 1 solution, eval=FALSE, include=FALSE}
+
+
+Canteen_data_inRformat <- readRDS(file="data/data20171001.Rda")
+Canteen_data_inRformat
+
+View(Canteen_data_inRformat)
+
+
+table(Canteen_data_inRformat$Units01)
+
+Extra001 <- Canteen_data_inRformat %>%
+ filter(!Department %in% c(NA, " - ", "-", " ", "")) %>%
+  dplyr::select(-Segment, -Units01) %>% 
+  mutate(Department = trimws(Department))
+
+# Better:
+Extra001 <- Canteen_data_inRformat %>%
+ filter(!trimws(Department) %in% c(NA, "-", "")) %>%
+  dplyr::select(-Segment, -Units01) 
+
+View(Extra001)
+
+```
+
+# Problem 2
+
+Make an id-variable that has the value 1 in line one and 2 in line 2 etc. (Save Extra001 in your working directory in R format).
+
+Remember to make comments.
+
+
+```{r problem 2, eval=FALSE, include=FALSE}
+Extra001 <- Canteen_data_inRformat %>%
+ filter(!trimws(Department) %in% c(NA, "-", "")) %>%
+  dplyr::select(-Segment, -Units01) %>%
+   mutate(id = row_number())
+
+saveRDS(Extra001, file = "data/Extra001.Rda")
+
+
+View(Extra001)
+
+```
+
+# Problem 3
+
+
+Make a new data set (call it Extra002) based on Extra001. Delete observations where “Subsidy” has a value, and where “Price01” is negative.
+
+Remember to make comments.
+  
+```{r problem 3, eval=FALSE, include=FALSE}
+
+Extra002 <- Extra001 %>% 
+  filter(!(!Subsidy %in% c(" ") & Price01 < 0))  #Filter the subsidies 
+ # %>%  filter(Price01 > 0) #Filter the rest i.e. the bottle deposits, if that actually was the plan
+View(Extra002)
+ 
+```
+
+
+# Problem 4
+
+
+Make a new data set (call it Extra003) based on Extra001. Keep only observations where “Subsidy” has a value. Check that all values of “Price01” are negative. Make an extra id variable that is equal to the first one you made minus one. 
+
+Remember to make comments.
+
+
+```{r problem 4, eval=FALSE, include=FALSE}
+
+Extra003 <- Extra001 %>% 
+ filter(!Subsidy %in% c(" ")) %>% 
+  mutate(id_extra = as.integer(id - 1)) %>%
+   dplyr::select(-Date01, -Timofday03, -(Department:Product), -id) %>%  # Problem 5
+    rename(Initials_extra = Initials, Sub_extra = Subsidy,  Price_extra = Price01)  # Problem 5
+
+View(Extra003)
+
+Extra003 %>% 
+  summarise(max(Price_extra))
+
+max(Extra003$Price_extra)
+
+
+```
+
+# Problem 5
+
+
+Delete the following variables: “Date01”, “Timofday03”, “Department”:”Product”, “Units01”, and the first id-variable you made. Rename the rest of the variables except the new id-variable. 
+
+Remember to make comments.
+
+
+```{r problem 9, eval=FALSE, include=FALSE}
+
+# See Problem 4
+
+```
+
+# Problem 6
+
+Merge Extra002 and Extra003, and sum Price_extra and Price01.
+
+Remember to make comments.  
+
+
+```{r problem 6 solution, eval=FALSE, include=FALSE}
+
+Newdata <- Extra002 %>%
+  left_join(Extra003, c("id" = "id_extra")) %>%
+   mutate(Price_extra = ifelse(is.na(Price_extra), 0, Price_extra)) %>%
+    mutate(New_price = Price_extra + Price01)
+View(Newdata)
+
+```
+
+
+
+# Problem 7
+
+Make a summary of the purchases for each employee for each day.
+
+Remember to make comments.  
+
+```{r problem 7 solution, eval=FALSE, include=FALSE}
+
+Newdata01 <- Newdata %>% 
+  filter(!trimws(Initials) %in% c(NA, "-", "", ".")) %>% 
+   group_by(Date01, Initials) %>% 
+    dplyr::summarise(
+              Count = n(),
+               Price = sum(Price01), 
+                Price_sub =sum(Price_extra), 
+                 Real_price = sum(New_price)
+             )
+
+
+
+```
+
+# Problem 8
+
+Based on Extra001, keep observations having “product” = “Pant retur” (i.e. bottle deposits). Make a summary per week – i.e. how many observations per week, and how much money is paid back to the employees in total per week.
+
+Remember to make comments.  
+
+```{r problem 8 solution, eval=FALSE, include=FALSE}
+
+Pant_retur <- Extra001 %>% 
+  filter(trimws(Product) == "Pant retur") %>% 
+   group_by(week(Date01), Initials) %>%
+    dplyr::summarize(
+              count = n(),
+               Pant = sum(Price01)
+              )
+View(Pant_retur)
+
+
+```
+
+# Problem 9
+
+Are employees that return the bottles and get deposits back higher spenders in the canteen compared to the rest of the employees?
+
+Remember to make comments.  
+
+```{r problem 9 solution, eval=FALSE, include=FALSE}
+
+Pant_retur01 <- Extra001 %>% 
+  filter(trimws(Product) == "Pant retur") %>% 
+   distinct(Initials) %>%
+    mutate(Pant01 = 1)
+View(Pant_retur01)
+
+Newdata02 <- Newdata01 %>% 
+  group_by(Initials) %>%
+   dplyr::summarize(Total_Sum = sum(Real_price)) 
+View(Newdata02)
+
+Newdata03 <- Newdata02 %>% 
+  left_join(Pant_retur01, by = "Initials") %>% 
+   mutate(Pant01 = ifelse(is.na(Pant01), 0, Pant01)) %>% 
+    group_by(Pant01) %>% 
+     dplyr::summarize(Average = mean(Total_Sum))
+View(Newdata03)
+
+```
+
+# Problem 10
+
+On which weekday (on average) is the sale highest in the canteen?
+
+Remember to make comments.  
+
+```{r problem 10 solution, eval=FALSE, include=FALSE}
+
+Newdata04a <- Newdata01 %>% 
+  group_by(weekday = wday(Date01)) %>% 
+   dplyr::summarize(Average = mean(Real_price)) %>% 
+    arrange(desc(Average)) %>%
+     head(1) %>% 
+      dplyr::select(weekday)
+Newdata04a
+
+Newdata04b <- Newdata01 %>% 
+  group_by(weekday = weekdays(Date01)) %>% 
+   dplyr::summarize(Total = sum(Real_price)) %>% 
+    arrange(desc(Total)) %>%
+     head(1) %>% 
+      dplyr::select(weekday)
+Newdata04b
+
+```
+
+# Problem 11
+
+Calculate the average sales per day but only for employees that are also in sample04, and not in the sample03.
+
+Remember to make comments.  
+
+```{r problem 11 solution, eval=FALSE, include=FALSE}
+
+sample03 <- readRDS("data/sample03.Rda")
+sample04 <- readRDS("data/sample04.Rda")
+
+Newdata05 <- Newdata01 %>% 
+ mutate(Initials = trimws(Initials)) %>% 
+  ungroup() %>% 
+   dplyr::select(-(Count:Price_sub))
+
+str(Newdata05)
+
+Newdata05 %>% 
+  filter(Initials %in% sample04$Initials & !Initials %in% sample03$Initials) %>% 
+   group_by(Date01) %>% 
+    dplyr::summarize(
+              Average = mean(Real_price),
+               Total = sum(Real_price),
+                Count = n()
+              )
+
+```
+
+
+# Problem 12
+
+Append the six data sets x201201 to x201206, and call the new data set x2012halfyear.
+
+Remember to make comments.  
+
+```{r problem 12 solution, eval=FALSE, include=FALSE}
+
+x201201 <- readRDS("data/x201201.Rda") 
+x201202 <- readRDS("data/x201202.Rda") 
+x201203 <- readRDS("data/x201203.Rda") 
+x201204 <- readRDS("data/x201204.Rda") 
+x201205 <- readRDS("data/x201205.Rda") 
+x201206 <- readRDS("data/x201206.Rda") 
+
+
+# Rigtige, men træls:
+x2012halfyear01 <- dplyr::union_all(x201201, dplyr::union_all(x201202, dplyr::union_all(x201203, dplyr::union_all(x201204, dplyr::union_all(x201205, x201206))))) %>% 
+  arrange(Dato, Timofday03, Initialer)
+x2012halfyear01
+
+
+# Forkerte:
+x2012halfyear01 <- dplyr::union_all(x201201, x201202, x201203, x201204, x201205, x201206) %>% 
+  arrange(Dato, Timofday03, Initialer)
+x2012halfyear01
+
+
+# Rigtige:
+x2012halfyear02 <- base::rbind(x201201, x201202, x201203, x201204, x201205, x201206) %>% 
+  arrange(Dato, Timofday03, Initialer)
+x2012halfyear02 
+
+```
+
+
+
+# Problem 13
+
+Merge Extra002 and Extra003. Use SQL!
+
+Remember to make comments.  
+
+```{r problem 13 solution, eval=FALSE, include=FALSE}
+
+if (!dir.exists("ourdata")) dir.create("ourdata")
+
+connection_ourdata <- dbConnect(SQLite(), "ourdata/r_db_ex.sqlite")
+
+dbWriteTable(connection_ourdata, "Extra001", Extra001, row.names = FALSE, overwrite = TRUE)
+dbWriteTable(connection_ourdata, "Extra002", Extra002, row.names = FALSE, overwrite = TRUE)
+dbWriteTable(connection_ourdata, "Extra003", Extra003, row.names = FALSE, overwrite = TRUE)
+dbDisconnect(connection_ourdata)
+
+
+connection_ourdata <- dbConnect(SQLite(), "ourdata/r_db_ex.sqlite")
+dbListFields(connection_ourdata, "Extra001")
+dbListFields(connection_ourdata, "Extra002")
+dbListFields(connection_ourdata, "Extra003")
+dbDisconnect(connection_ourdata)
+
+connection_ourdata <- dbConnect(SQLite(), "ourdata/r_db_ex.sqlite")
+EXTRA2and3_db  <- dbGetQuery(connection_ourdata, 
+                             "select s.*, t.*
+                                from Extra002 as s 
+                                left join Extra003 as t 
+                                on s.id = t.id_extra
+                             ")
+dbDisconnect(connection_ourdata)
+
+View(EXTRA2and3_db)   
+
+
+#Extra
+connection_ourdata <- dbConnect(SQLite(), "ourdata/r_db_ex.sqlite")
+db_Extra001 <- dbReadTable(connection_ourdata, "Extra001")
+db_Extra002 <- dbReadTable(connection_ourdata, "Extra002")
+db_Extra003 <- dbReadTable(connection_ourdata, "Extra003")
+dbDisconnect(connection_ourdata)
+
+```
+
+# Problem 14
+
+Based on Extra001, keep observations having “product” = “Pant retur” (i.e. bottle deposits). Make a summary for each employee – i.e. how many observations per employee, and how much money is paid back to 
+the employees in total. Keep only observations if the sum of Price01 is less than -10. Use SQL!  
+
+Remember to make comments.  
+
+```{r problem 14 solution, eval=FALSE, include=FALSE}
+
+connection_ourdata <- dbConnect(SQLite(), "ourdata/r_db_ex.sqlite")
+EXTRA_deposit_db <- dbGetQuery(connection_ourdata, 
+                               "select *, count(*) as no, sum(Price01) as pr
+                                from Extra001
+                                 where trim(product) = 'Pant retur'
+                                  group by Initials
+                                   having pr < -10"
+                               )
+dbDisconnect(connection_ourdata)
+```
+
+```{r}
+
+```
+
