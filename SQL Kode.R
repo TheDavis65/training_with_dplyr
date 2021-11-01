@@ -204,6 +204,7 @@ diamonds_in_our_db_009 <- dbGetQuery(connection_ourdata,
                            "select carat, price from diamonds where price > 18800"
                                      )
 head(diamonds_in_our_db_009)
+
 dbDisconnect(connection_ourdata)
 
 
@@ -507,7 +508,7 @@ dbWriteTable(connection_ourdata, "ex_foj_02", ex_foj_02, row.names = FALSE,
              overwrite = TRUE)
 
 
-
+### test dette set full outer join
 
 uniondata1  <- dbGetQuery(connection_ourdata, 
                          "select a from ex_foj_01
