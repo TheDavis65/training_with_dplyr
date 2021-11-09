@@ -4,7 +4,7 @@ pacman::p_load("tidyverse", "magrittr", "nycflights13", "gapminder",
                "XML", "httr", "jsonlite", "lubridate", "microbenchmark",
                "splines", "ISLR", "MASS", "testthat", "leaps", "caret",
                "RSQLite", "class", "babynames", "nasaweather",
-               "fueleconomy", "viridis")
+               "fueleconomy", "viridis","ISLR2")
 
 
 ##CHT 13
