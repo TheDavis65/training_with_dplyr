@@ -161,7 +161,7 @@ str_view(x, "\\\\")
 x <- c("apple", "banana", "pear")
 str_view(x, "^a")
 str_view(x, "a$")
-
+x
 x <- c("apple pie", "apple", "apple cake")
 str_view(x, "apple")
 str_view(x, "^apple$")
@@ -246,6 +246,7 @@ str_detect(x, "e")
 # How many common words start with t?
 ?words
 words
+fruit
 # How many common words start with t?
 sum(str_detect(words, "^t"))
 # What proportion of common words starts with t?
@@ -266,6 +267,8 @@ identical(no_vowels_1, no_vowels_2)
 
 words[str_detect(words, "x$")] #logical subsetting
 str_subset(words, "x$") #str_subset wrapper
+str_subset(words, "^a")
+
 
 ?seq_along()
 
@@ -289,10 +292,12 @@ str_detect(x, "a") #Yes/NO - TRUE/FALSE
 mean(str_count(words, "[aeiou]"))
 
 
+
 df2 <- df %>% 
   mutate(
     vowels = str_count(word, "[aeiou]"),
-    consonants = str_count(word, "[^aeiou]")
+    consonants = str_count(word, "[^aeiou]"),
+    word_length = str_length(word)
   )
 df2
 
@@ -305,7 +310,7 @@ str_count("abababa", "aba")
 str_view_all("abababa", "aba")
 
 #Extract matches
-sentences
+?sentences
 length(sentences)
 head(sentences)
 
@@ -323,7 +328,6 @@ has_colour
 # matches <- str_extract(has_colour, colour_match) #str_extract() only
 #extracts the first match.
 matches
-
 more <- sentences[str_count(sentences, colour_match) > 1]
 str_view_all(more, colour_match)
 str_extract(more, colour_match) #Extracts the first match.
@@ -464,8 +468,8 @@ str_split(x, boundary("word"))[[1]] #.,; etc not included
 #str_locate() and str_locate_all() 
 
 str_locate(sentences, boundary("word"))
-str_locate_all(sentences, boundary("word"))
-
+st <-str_locate_all(sentences, boundary("word"))
+head(st)
 
 #Other types of pattern
 str_view(fruit, "nana") # Is shorthand for 
